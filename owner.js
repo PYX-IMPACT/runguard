@@ -42,7 +42,7 @@ async function db(){
   $("main").innerHTML=`<section class="card"><div class="dbbar"><select id="dbt" aria-label="Table">${d.tables.map(t=>`<option value="${esc(t.name)}" ${t.name==d.table?"selected":""}>${esc(t.name)} (${t.count})</option>`).join("")}</select>
     <span class="dim">Read-only. Rows ${d.total?d.offset+1:0}-${d.offset+d.rows.length} of ${d.total}, newest first.</span>
     <button class="btn" data-pg="-1" ${d.offset<=0?"disabled":""}>Prev</button><button class="btn" data-pg="1" ${d.offset+50>=d.total?"disabled":""}>Next</button></div>
-    <div class="scroll"><table class="tbl"><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${d.rows.map(r=>`<tr>${cols.map(c=>cell(r[c])).join("")}</tr>`).join("")}</tbody></table></div></section>`;
+    <div class="scroll"><table class="tbl db"><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${d.rows.map(r=>`<tr>${cols.map(c=>cell(r[c])).join("")}</tr>`).join("")}</tbody></table></div></section>`;
 }
 async function audit(){
   const a=await api("/owner/audit");
