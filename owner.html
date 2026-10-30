@@ -8,7 +8,8 @@
 <link rel="stylesheet" href="style.css">
 </head><body>
 <form class="login" id="lf"><h1>Owner access</h1><p>Owner password required.</p>
-  <input id="pw" type="password" placeholder="Owner password" autocomplete="current-password" aria-label="Owner password">
+  <input class="sr" type="text" name="username" value="owner" autocomplete="username" tabindex="-1" aria-hidden="true">
+  <input id="pw" name="password" type="password" placeholder="Owner password" autocomplete="current-password" aria-label="Owner password">
   <button class="btn primary" type="submit">Log in</button><p id="msg" role="alert"></p></form>
 <div id="app" hidden>
   <div class="bar"><h1>RunGuard owner</h1><div class="tabs" id="nav"></div><button class="btn" id="out">Log out</button></div>
