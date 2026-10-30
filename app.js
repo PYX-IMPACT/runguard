@@ -1,6 +1,8 @@
 const api=makeApi("rg");
 const reasons=r=>JSON.parse(r.reasons||"[]");
-const TABS=[["flagged","Flagged"],["review","Review"],["unflagged","Unflagged"],["all","All"]];
+const TABS=[["flagged","Flagged"],["review","Review"],["unflagged","Unflagged"],["cleared","Cleared"],["cheat","Confirmed cheats"],["all","All"]];
+// Flagged/Review/Unflagged only hold runs nobody has judged yet; judged runs move to Cleared or Confirmed cheats.
+const inTab=(r,k)=>k=="all"||(k=="cleared"?r.review_state=="cleared":k=="cheat"?r.review_state=="confirmed_cheat":r.status==k&&r.review_state=="pending");
 const RV={pending:"Pending",confirmed_cheat:"Cheat confirmed",cleared:"Cleared"};
 const ERR={pending:"Your Discord account is waiting for approval. Ask the admin to approve it, then log in again.",blocked:"This Discord account is not allowed to review runs.",denied:"Discord login was cancelled.",failed:"Login failed. Please try again."};
 let rows=[],tab="flagged",q="",pendOnly=false,cur=null;
@@ -22,7 +24,7 @@ async function load(){
     if(cur){const n=rows.find(x=>x.id==cur.id);if(n)openRun(n.id);}
   }catch(e){showLogin(e.message);}
 }
-function vis(){const k=q.toLowerCase();return rows.filter(r=>(tab=="all"||r.status==tab)&&(!pendOnly||r.review_state=="pending")&&(!k||[r.player_name,r.player_login,r.map_name,r.run_id,r.reasons].join(" ").toLowerCase().includes(k)));}
+function vis(){const k=q.toLowerCase();return rows.filter(r=>inTab(r,tab)&&(!pendOnly||r.review_state=="pending")&&(!k||[r.player_name,r.player_login,r.map_name,r.run_id,r.reasons].join(" ").toLowerCase().includes(k)));}
 function runHtml(r){
   const why=reasons(r).map(x=>`<em>${esc(x)}</em>`).join("")||'<span class="ok">No issues found</span>';
   return `<div class="run ${esc(r.status)}" data-id="${esc(r.id)}" tabindex="0"><div class="who"><b>${esc(r.player_name||r.player_login)}</b><span>${esc(r.map_name)}</span></div>
@@ -30,7 +32,7 @@ function runHtml(r){
   <div class="rv ${esc(r.review_state)}">${esc(RV[r.review_state]||r.review_state)}</div></div>`;
 }
 function draw(){
-  $("tabs").innerHTML=TABS.map(([k,l])=>`<button class="tab ${k==tab?"on":""}" data-tab="${k}">${l}<i>${k=="all"?rows.length:rows.filter(r=>r.status==k).length}</i></button>`).join("");
+  $("tabs").innerHTML=TABS.map(([k,l])=>`<button class="tab ${k==tab?"on":""}" data-tab="${k}">${l}<i>${rows.filter(r=>inTab(r,k)).length}</i></button>`).join("");
   const v=vis();
   $("list").innerHTML=v.length?v.map(runHtml).join(""):'<p class="empty">No runs here yet. Reports appear when a player finishes a run with upload turned on.</p>';
 }
@@ -45,7 +47,7 @@ function openRun(id){
    <div class="pills">${why}</div>
    <div class="grid">${m("Top speed",n("max_speed_kmh").toFixed(0)," km/h")}${m("Peak acceleration",n("max_accel").toFixed(0)," m/s²")}${m("Largest jump",n("max_excess_jump_m").toFixed(1)," m")}
    ${m("Respawns",n("respawns"))}${m("Gas toggles",n("max_gas_toggles_per_s")," /s")}${m("Steer presses",n("max_steer_presses_per_s")," /s")}</div>
-   <div class="acts"><button class="btn red" data-mark="confirmed_cheat">Confirm cheat</button><button class="btn green" data-mark="cleared">Clear run</button><button class="btn" data-mark="pending">Reset</button></div>
+   <div class="acts"><button class="btn red" data-mark="confirmed_cheat">Confirm cheat</button><button class="btn green" data-mark="cleared">Clear run</button><button class="btn" data-mark="pending">Reset</button>${r.review_state!="pending"?'<button class="btn red" data-del="1">Delete run</button>':""}</div>
    <input id="note" placeholder="Add a note" value="${esc(r.review_note)}" aria-label="Review note">
    <h3>Events</h3><ul class="ev">${evs}</ul><h3>Plugins running (plugin ${esc(r.plugin_version)}, login ${esc(r.player_login)})</h3><div class="pills">${pl}</div>
    <details><summary>Raw report</summary><pre>${esc(JSON.stringify(j,null,2))}</pre></details>`;
@@ -57,7 +59,11 @@ document.addEventListener("click",async e=>{
   if(t.dataset.tab){tab=t.dataset.tab;draw();}
   else if(t.id=="close"||t.id=="veil")closeRun();
   else if(t.dataset.mark){
-    try{await api("/review",{method:"POST",body:JSON.stringify({id:cur.id,state:t.dataset.mark,note:$("note").value})});await load();}
+    try{const b={id:cur.id,state:t.dataset.mark,note:$("note").value};await api("/review",{method:"POST",body:JSON.stringify(b)});closeRun();await load();}
+    catch(err){alert(err.message);}
+  } else if(t.dataset.del){
+    if(!confirm("Delete this run permanently? This cannot be undone."))return;
+    try{const id=cur.id;await api("/runs?id="+encodeURIComponent(id),{method:"DELETE"});closeRun();await load();}
     catch(err){alert(err.message);}
   } else if(row)openRun(row.dataset.id);
 });
