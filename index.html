@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RunGuard review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head><body>
+<form class="login" id="login"><h1>RunGuard</h1><p>Log in to review submitted runs.</p>
+  <input id="tok" type="password" placeholder="Admin password" autocomplete="current-password" aria-label="Admin password">
+  <button class="btn primary" id="in" type="submit">Log in</button><p id="msg" role="alert"></p></form>
+<div id="app" hidden>
+  <div class="bar"><h1>RunGuard review</h1><button class="btn" id="refresh">Refresh</button><button class="btn" id="out">Log out</button></div>
+  <main>
+    <div class="tools"><div class="tabs" id="tabs"></div>
+      <input type="search" id="q" placeholder="Search player, map or reason" aria-label="Search runs">
+      <label><input type="checkbox" id="pend"> Pending only</label></div>
+    <div id="list"></div>
+  </main>
+</div>
+<div id="veil"></div><aside id="drawer" aria-label="Run details"></aside>
+<script src="app.js"></script></body></html>
