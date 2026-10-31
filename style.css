@@ -61,3 +61,9 @@ details{margin-top:18px}summary{cursor:pointer;color:var(--mute)}pre{background:
 /* --- v3 additions --- */
 .owner-link{display:block;text-align:center;text-decoration:none;color:var(--mute)}
 .sr{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+
+/* --- v4 additions --- */
+.btn.plain{display:block;text-align:center;text-decoration:none;color:var(--mute)}
+.foot{position:fixed;left:0;right:0;bottom:14px;text-align:center;font-size:12px}
+.foot a{color:var(--mute);opacity:.7;text-decoration:none}.foot a:hover{opacity:1;text-decoration:underline}
+#login[hidden]~.foot{display:none}
